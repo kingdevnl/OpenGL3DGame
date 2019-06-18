@@ -34,6 +34,7 @@ int main() {
 	window = glfwCreateWindow(WIDTH, HEIGHT, "3DGame", 0, 0);
 	glfwMakeContextCurrent(window);
 	glewInit();
+	glfwSwapInterval(1);
 	glfwShowWindow(window);
 
 	ShaderProgram shader = ShaderProgram("./res/vertex.fs", "./res/fragment.fs");
@@ -138,48 +139,73 @@ int main() {
 		1.0f, 0.5f,
 	};
 
-	Texture texture("./res/grass.png");
-
-	Mesh mesh(positions, indices, textCoords, &texture);
-
-
-	GameItem gameItem(mesh);
-
 
 	shader.bind();
 	glm::vec3 camPos(0.f, 0.0, 2.f);
 	glm::vec3 worldUp(0.f, 1.f, 0.f);
 	glm::vec3 camFront(0.f, 0.f, -1.f);
-
 	glm::mat4 viewMatrix(1.f);
-
-	viewMatrix = glm::lookAt(camPos, camPos + camFront, worldUp);
 	float fov = 90.f;
 	float nearPlane = 0.1f;
 	float farPlane = 1000.f;
+
+
 	glm::mat4 projectionMatrix(1.f);
-	projectionMatrix = glm::perspective(glm::radians(fov), (float)WIDTH/HEIGHT, nearPlane, farPlane);
+	projectionMatrix = glm::perspective(glm::radians(fov), (float)WIDTH / HEIGHT, nearPlane, farPlane);
+	viewMatrix = glm::lookAt(camPos, camPos + camFront, worldUp);
+
 	shader.setUniformMatrix4f("viewMatrix", viewMatrix);
+
 	shader.setUniformMatrix4f("projectionMatrix", projectionMatrix);
+
 	shader.unbind();
 
 
 	glEnable(GL_DEPTH_TEST);
+	Texture texture("./res/grass.png");
 
+	Mesh mesh(positions, indices, textCoords, &texture);
+	GameItem gameItem(mesh);
+	GameItem gameItem2(mesh);
+	GameItem gameItem3(mesh);
+
+	gameItem2.setPostion(glm::vec3(2, 0, 0));
+	gameItem3.setPostion(glm::vec3(-2, 0, 0));
+	float speed = .1f;
 
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
 		shader.bind();
+		viewMatrix = glm::lookAt(camPos, camPos + camFront, worldUp);
+		shader.setUniformMatrix4f("viewMatrix", viewMatrix);
+
+		if (glfwGetKey(window, GLFW_KEY_W)) {
+			camPos.z -= speed;
+		}
+		if (glfwGetKey(window, GLFW_KEY_S)) {
+			camPos.z += speed;
+		}
+		if (glfwGetKey(window, GLFW_KEY_A)) {
+			camPos.x -= speed;
+		}
+		if (glfwGetKey(window, GLFW_KEY_D)) {
+			camPos.x += speed;
+		}
+
+
 		glm::vec3 rot = gameItem.getRotation();
 		rot.x += .5f;
 		rot.y += .5f;
-		rot.z += .5f;
+		rot.z -= .5f;
 		gameItem.setRotation(rot);
-
+		gameItem2.setRotation(rot);
+		gameItem3.setRotation(rot);
 
 		gameItem.render(shader);
+		gameItem2.render(shader);
+		gameItem3.render(shader);
 
 		shader.unbind();
 
