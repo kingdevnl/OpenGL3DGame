@@ -172,6 +172,9 @@ int main() {
 	gameItem2.setPostion(glm::vec3(2, 0, 0));
 	gameItem3.setPostion(glm::vec3(-2, 0, 0));
 	float speed = .1f;
+	float camSpeed = 1.f;
+	
+	float camRot = 0;
 
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -195,10 +198,29 @@ int main() {
 		}
 
 
+		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
+			camPos.y += speed;
+		}
+		if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)) {
+			camPos.y -= speed;
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_Q)) {
+			camRot += camSpeed;
+		}
+		if (glfwGetKey(window, GLFW_KEY_E)) {
+			camRot -= camSpeed;
+		}
+
+
+		viewMatrix = glm::rotate(viewMatrix, glm::radians(camRot), glm::vec3(0.f, 1.f, 0.f)); //cam rot z
+		shader.setUniformMatrix4f("viewMatrix", viewMatrix);
+
+
 		glm::vec3 rot = gameItem.getRotation();
-		rot.x += .5f;
-		rot.y += .5f;
-		rot.z -= .5f;
+		// rot.x += .5f;
+		// rot.y += .5f;
+		// rot.z -= .5f;
 		gameItem.setRotation(rot);
 		gameItem2.setRotation(rot);
 		gameItem3.setRotation(rot);
