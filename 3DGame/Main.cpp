@@ -171,9 +171,9 @@ int main() {
 
 	
 	float camMoveSpeed = .1f;
-	float camRotSpeed = .02f;
+	float camRotSpeed = glm::degrees(.03f);
 
-	float camRot = 0;
+	float camRot = glm::degrees(130.5f);
 
 	std::vector<GameItem> items;
 
@@ -211,13 +211,15 @@ int main() {
 
 			camRot += camRotSpeed;
 		}
-		camFront.x = camRot;
+		camFront.x = cos(glm::radians(camRot));
+		camFront.z = sin(glm::radians(camRot));
+		camFront = glm::normalize(camFront);
+		
 
 		viewMatrix = glm::lookAt(camPos, camPos + camFront, worldUp);
-		viewMatrix = glm::rotate(viewMatrix, glm::radians(camRot), glm::vec3(0.f, 1.f, 0.f)); //cam rot z
+	
 
-
-		shader.setUniformMatrix4f("viewMatrix", viewMatrix);
+		shader.setUniformMatrix4f("viewMatrix", viewMatrix);	
 
 		for (GameItem& item : items) {
 			glm::vec3 rotation = item.getRotation();
