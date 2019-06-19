@@ -24,6 +24,7 @@ GLuint vao, vbo;
 
 GLFWwindow* window;
 
+
 int main() {
 
 	info("Setting up.");
@@ -151,9 +152,10 @@ int main() {
 
 
 	glm::mat4 projectionMatrix(1.f);
+
 	projectionMatrix = glm::perspective(glm::radians(fov), (float)WIDTH / HEIGHT, nearPlane, farPlane);
+
 	shader.setUniformMatrix4f("projectionMatrix", projectionMatrix);
-	viewMatrix = glm::lookAt(camPos, camPos + camFront, worldUp);
 
 	shader.unbind();
 
@@ -163,18 +165,21 @@ int main() {
 
 	Mesh mesh(positions, indices, textCoords, &texture);
 	GameItem gameItem(mesh);
+	GameItem gameItem2(mesh);
 
+	gameItem2.setPostion(glm::vec3(2, 0, 0));
 
-	float speed = .1f;
-	float camSpeed = 1.f;
+	
+	float camMoveSpeed = .1f;
+	float camRotSpeed = .02f;
 
 	float camRot = 0;
 
 	std::vector<GameItem> items;
 
 	items.push_back(gameItem);
+	items.push_back(gameItem2);
 
-	
 
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -184,52 +189,45 @@ int main() {
 
 
 		if (glfwGetKey(window, GLFW_KEY_W)) {
-			camPos.z -= speed;
+			camPos += camMoveSpeed * camFront;
+
 		}
 		if (glfwGetKey(window, GLFW_KEY_S)) {
-			camPos.z += speed;
+			camPos -= camMoveSpeed * camFront;
 		}
+
 		if (glfwGetKey(window, GLFW_KEY_A)) {
-			camPos.x -= speed;
+			camPos -= camMoveSpeed * glm::normalize(glm::cross(camFront, worldUp));
 		}
+
 		if (glfwGetKey(window, GLFW_KEY_D)) {
-			camPos.x += speed;
+			camPos += camMoveSpeed * glm::normalize(glm::cross(camFront, worldUp));
 		}
-
-
-		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
-			camPos.y += speed;
-		}
-		if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)) {
-			camPos.y -= speed;
-		}
-
 		if (glfwGetKey(window, GLFW_KEY_Q)) {
-			camRot += camSpeed;
+
+			camRot -= camRotSpeed;
 		}
 		if (glfwGetKey(window, GLFW_KEY_E)) {
-			camRot -= camSpeed;
+
+			camRot += camRotSpeed;
 		}
-
-
+		camFront.x = camRot;
 
 		viewMatrix = glm::lookAt(camPos, camPos + camFront, worldUp);
 		viewMatrix = glm::rotate(viewMatrix, glm::radians(camRot), glm::vec3(0.f, 1.f, 0.f)); //cam rot z
 
 
-
 		shader.setUniformMatrix4f("viewMatrix", viewMatrix);
-		 
-		for(GameItem &item : items) {
+
+		for (GameItem& item : items) {
 			glm::vec3 rotation = item.getRotation();
-			
+
 			item.setRotation(rotation);
 			item.render(shader);
-			spdlog::info("rotation {}", rotation.x, rotation.y, rotation.z);
 
 		}
-		
-	
+
+
 		shader.unbind();
 
 		glfwSwapBuffers(window);
