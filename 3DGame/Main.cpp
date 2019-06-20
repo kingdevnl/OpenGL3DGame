@@ -9,6 +9,7 @@
 #include "Mesh.h"
 #include "Texture.h"
 #include "GameItem.h"
+#include "ObjHelper.h"
 
 
 #pragma comment(lib, "opengl32.lib")
@@ -42,103 +43,7 @@ int main() {
 
 	spdlog::info("shader {0}", shader.programID);
 
-	std::vector<float> positions = {
-		// V0
-		-0.5f, 0.5f, 0.5f,
-		// V1
-		-0.5f, -0.5f, 0.5f,
-		// V2
-		0.5f, -0.5f, 0.5f,
-		// V3
-		0.5f, 0.5f, 0.5f,
-		// V4
-		-0.5f, 0.5f, -0.5f,
-		// V5
-		0.5f, 0.5f, -0.5f,
-		// V6
-		-0.5f, -0.5f, -0.5f,
-		// V7
-		0.5f, -0.5f, -0.5f,
-
-		// For text coords in top face
-		// V8: V4 repeated
-		-0.5f, 0.5f, -0.5f,
-		// V9: V5 repeated
-		0.5f, 0.5f, -0.5f,
-		// V10: V0 repeated
-		-0.5f, 0.5f, 0.5f,
-		// V11: V3 repeated
-		0.5f, 0.5f, 0.5f,
-
-		// For text coords in right face
-		// V12: V3 repeated
-		0.5f, 0.5f, 0.5f,
-		// V13: V2 repeated
-		0.5f, -0.5f, 0.5f,
-
-		// For text coords in left face
-		// V14: V0 repeated
-		-0.5f, 0.5f, 0.5f,
-		// V15: V1 repeated
-		-0.5f, -0.5f, 0.5f,
-
-		// For text coords in bottom face
-		// V16: V6 repeated
-		-0.5f, -0.5f, -0.5f,
-		// V17: V7 repeated
-		0.5f, -0.5f, -0.5f,
-		// V18: V1 repeated
-		-0.5f, -0.5f, 0.5f,
-		// V19: V2 repeated
-		0.5f, -0.5f, 0.5f,
-	};
-	std::vector<unsigned int> indices = {
-		// Front face
-		0, 1, 3, 3, 1, 2,
-		// Top Face
-		8, 10, 11, 9, 8, 11,
-		// Right face
-		12, 13, 7, 5, 12, 7,
-		// Left face
-		14, 15, 6, 4, 14, 6,
-		// Bottom face
-		16, 18, 19, 17, 16, 19,
-		// Back face
-		4, 6, 7, 5, 4, 7,
-	};
-
-
-	std::vector<float> textCoords = {
-		0.0f, 0.0f,
-		0.0f, 0.5f,
-		0.5f, 0.5f,
-		0.5f, 0.0f,
-
-		0.0f, 0.0f,
-		0.5f, 0.0f,
-		0.0f, 0.5f,
-		0.5f, 0.5f,
-
-		// For text coords in top face
-		0.0f, 0.5f,
-		0.5f, 0.5f,
-		0.0f, 1.0f,
-		0.5f, 1.0f,
-
-		// For text coords in right face
-		0.0f, 0.0f,
-		0.0f, 0.5f,
-
-		// For text coords in left face
-		0.5f, 0.0f,
-		0.5f, 0.5f,
-
-		// For text coords in bottom face
-		0.5f, 0.0f,
-		1.0f, 0.0f,
-		0.5f, 0.5f,
-		1.0f, 0.5f,
-	};
+	
 
 
 	shader.bind();
@@ -161,25 +66,27 @@ int main() {
 
 
 	glEnable(GL_DEPTH_TEST);
-	Texture texture("./res/grass.png");
 
-	Mesh mesh(positions, indices, textCoords, &texture);
-	GameItem gameItem(mesh);
-	GameItem gameItem2(mesh);
 
-	gameItem2.setPostion(glm::vec3(2, 0, 0));
 
-	
+
 	float camMoveSpeed = .1f;
 	float camRotSpeed = glm::degrees(.03f);
 
 	float camRot = glm::degrees(130.5f);
 
 	std::vector<GameItem> items;
+	Texture texture("./res/grass.png");
 
-	items.push_back(gameItem);
-	items.push_back(gameItem2);
 
+	Mesh mesh = loadObj("./res/block.obj", &texture);
+	GameItem item(mesh);
+	items.push_back(item);
+
+
+
+
+	
 
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -214,12 +121,12 @@ int main() {
 		camFront.x = cos(glm::radians(camRot));
 		camFront.z = sin(glm::radians(camRot));
 		camFront = glm::normalize(camFront);
-		
+
 
 		viewMatrix = glm::lookAt(camPos, camPos + camFront, worldUp);
-	
 
-		shader.setUniformMatrix4f("viewMatrix", viewMatrix);	
+
+		shader.setUniformMatrix4f("viewMatrix", viewMatrix);
 
 		for (GameItem& item : items) {
 			glm::vec3 rotation = item.getRotation();

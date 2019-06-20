@@ -6,7 +6,14 @@ in vec2 outTexCoord;
 
 uniform sampler2D texture_sampler;
 
+uniform bool hasTexture;
+
 void main(){
-    fragColor = vec4(0.0, 0.5, 0.5, 1.0);
+if(hasTexture) {
 	fragColor = texture(texture_sampler, outTexCoord);
+} else {
+	fragColor = vec4(0.0, 0.5, 0.5, 1.0);
+
+}
+
 }

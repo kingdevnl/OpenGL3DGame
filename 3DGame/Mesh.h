@@ -2,6 +2,15 @@
 #include "gl/glew.h"
 #include <vector>
 #include "Texture.h"
+#include <glm/glm.hpp>
+#include "ShaderProgram.h"
+
+struct Vertex {
+	glm::vec3 position;
+	glm::vec3 normal;
+	glm::vec2 textCoords;
+};
+
 
 class Mesh {
 private:
@@ -16,7 +25,7 @@ public:
 
 
 	Mesh(const std::vector<float>& positions, const std::vector<unsigned>& indices,
-		const std::vector<float>& text_coords, Texture* texture)
+	     const std::vector<float>& text_coords, Texture* texture)
 		: positions(positions),
 		  indices(indices),
 		  textCoords(text_coords),
@@ -24,6 +33,6 @@ public:
 		createMesh();
 	}
 
-	void render();
+	void render(ShaderProgram shader);
 	void destroy();
 };

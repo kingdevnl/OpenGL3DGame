@@ -23,6 +23,6 @@ void GameItem::render(ShaderProgram shader) {
 	modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));
 	shader.setUniformMatrix4f("modelMatrix", modelMatrix);
 
-	this->mesh.render();
+	this->mesh.render(shader);
 
 }
