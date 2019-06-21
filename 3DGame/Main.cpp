@@ -10,6 +10,7 @@
 #include "Texture.h"
 #include "GameItem.h"
 #include "ObjHelper.h"
+#include "Light.h"
 
 
 #pragma comment(lib, "opengl32.lib")
@@ -25,6 +26,7 @@ GLuint vao, vbo;
 
 GLFWwindow* window;
 
+Light light{glm::vec3(0,0,0), glm::vec3(1,1,1)};
 
 int main() {
 
@@ -39,7 +41,7 @@ int main() {
 	glfwSwapInterval(1);
 	glfwShowWindow(window);
 
-	ShaderProgram shader = ShaderProgram("./res/vertex.fs", "./res/fragment.fs");
+	ShaderProgram shader = ShaderProgram("./res/shaders/vertex.fs", "./res/shaders/fragment.fs");
 
 	spdlog::info("shader {0}", shader.programID);
 
@@ -62,6 +64,10 @@ int main() {
 
 	shader.setUniformMatrix4f("projectionMatrix", projectionMatrix);
 
+	shader.setUniform3f("lightPosition", light.position);
+	shader.setUniform3f("lightColour", light.colour);
+
+
 	shader.unbind();
 
 
@@ -76,13 +82,16 @@ int main() {
 	float camRot = glm::degrees(130.5f);
 
 	std::vector<GameItem> items;
-	Texture texture("./res/grass.png");
+	Texture texture("./res/textures/grass.png");
 
 
-	Mesh mesh = loadObj("./res/block.obj", &texture);
-	GameItem item(mesh);
-	items.push_back(item);
+	// Mesh mesh = loadObj("./res/models/block.obj", &texture);
+	// GameItem item(mesh);
+	// items.push_back(item);
 
+	Mesh dragonMesh = loadObj("./res/models/dragon.obj", nullptr);
+	GameItem dragon(dragonMesh);
+	items.push_back(dragon);
 
 
 
@@ -118,6 +127,16 @@ int main() {
 
 			camRot += camRotSpeed;
 		}
+
+		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
+
+			camPos.y += camMoveSpeed;
+		}
+		if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)) {
+
+			camPos.y -= camMoveSpeed;
+		}
+
 		camFront.x = cos(glm::radians(camRot));
 		camFront.z = sin(glm::radians(camRot));
 		camFront = glm::normalize(camFront);
@@ -130,6 +149,7 @@ int main() {
 
 		for (GameItem& item : items) {
 			glm::vec3 rotation = item.getRotation();
+			rotation.y += .5f;
 
 			item.setRotation(rotation);
 			item.render(shader);
@@ -144,7 +164,7 @@ int main() {
 	}
 
 
-	mesh.destroy();
+	dragonMesh.destroy();
 	texture.destroy();
 	shader.destroy();
 

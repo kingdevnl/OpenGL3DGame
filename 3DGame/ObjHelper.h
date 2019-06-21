@@ -15,6 +15,7 @@ Mesh procNode(aiNode* node, const aiScene* scene, Texture* texture) {
 	std::vector<float> positions;
 	std::vector<unsigned int> indices;
 	std::vector<float> textCoords;
+	std::vector<float> normals;
 
 	// process all the node's meshes (if any)
 	unsigned int childCount = node->mNumChildren;
@@ -23,26 +24,31 @@ Mesh procNode(aiNode* node, const aiScene* scene, Texture* texture) {
 	for (unsigned int childNum = 0; childNum < childCount; childNum++) {
 		aiNode* child = node->mChildren[childNum];
 		unsigned int meshCount = child->mNumMeshes;
-	
 
-
-		std::cout << meshCount;
-		aiMesh* mesh = scene->mMeshes[child->mMeshes[0]];
 
 		
+		aiMesh* mesh = scene->mMeshes[child->mMeshes[0]];
 
-		for(unsigned int vertNum =0; vertNum < mesh->mNumVertices; vertNum++) {
-			aiVector3D vert =  mesh->mVertices[vertNum];
-			
+
+		for (unsigned int vertNum = 0; vertNum < mesh->mNumVertices; vertNum++) {
+			aiVector3D vert = mesh->mVertices[vertNum];
+
 			positions.push_back(vert.x);
 			positions.push_back(vert.y);
 			positions.push_back(vert.z);
-			if(mesh->mTextureCoords[0]) {
+			if (mesh->mTextureCoords[0]) {
 				textCoords.push_back(mesh->mTextureCoords[0][vertNum].x);
 				textCoords.push_back(mesh->mTextureCoords[0][vertNum].y);
 			}
+			float normX = mesh->mNormals[vertNum].x;
+			float normY = mesh->mNormals[vertNum].y;
+			float normZ = mesh->mNormals[vertNum].z;
+			normals.push_back(normX);
+			normals.push_back(normY);
+			normals.push_back(normZ);
 
 		}
+
 
 		unsigned int faceCount = mesh->mNumFaces;
 		unsigned int indicesCount;
@@ -55,10 +61,12 @@ Mesh procNode(aiNode* node, const aiScene* scene, Texture* texture) {
 			indicesCount = 0;
 		}
 
-	
 
 	}
-	return Mesh(positions, indices, textCoords, texture);
+	spdlog::info("positions {}", positions.size());
+	spdlog::info("indices {}", indices.size());
+	spdlog::info("normals {}", normals.size());
+	return Mesh(positions, indices, normals, textCoords, texture);
 
 }
 
@@ -67,7 +75,7 @@ inline Mesh loadObj(const char* file, Texture* texture) {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(file, aiProcess_Triangulate | aiProcess_FlipUVs);
 
-return procNode(scene->mRootNode, scene, texture);
+	return procNode(scene->mRootNode, scene, texture);
 
 
 	// tinyobj::attrib_t attrib;

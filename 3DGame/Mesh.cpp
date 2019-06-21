@@ -18,20 +18,27 @@ void Mesh::createMesh() {
 	glVertexAttribPointer(1, 1, GL_UNSIGNED_INT, false, 0, 0);
 	vbos.push_back(vbo);
 
-	if(texture != nullptr) {
+
+	if (texture != nullptr) {
+		glGenBuffers(1, &vbo);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * textCoords.size(), &textCoords[0], GL_STATIC_DRAW);
+		glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
+		vbos.push_back(vbo);
+	}
+
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * textCoords.size(), &textCoords[0], GL_STATIC_DRAW);
-	glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * normals.size(), &normals[0], GL_STATIC_DRAW);
+	glVertexAttribPointer(3, 3, GL_FLOAT, false, 0, 0);
 	vbos.push_back(vbo);
-	}
 
 	glBindVertexArray(0);
 
 }
 
 void Mesh::render(ShaderProgram shader) {
-	if(texture !=nullptr) {
+	if (texture != nullptr) {
 		shader.setUniform1f("hasTexture", GL_TRUE);
 	}
 	else {
@@ -41,23 +48,24 @@ void Mesh::render(ShaderProgram shader) {
 	glBindVertexArray(vao);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
-	if(texture != nullptr) {
-	glEnableVertexAttribArray(2);
+	if (texture != nullptr) {
+		glEnableVertexAttribArray(2);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture->textureID);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture->textureID);
 	}
-
+	glEnableVertexAttribArray(3);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
-	
-	
-	if(texture !=nullptr) {
+
+
+	if (texture != nullptr) {
 		glDisableVertexAttribArray(2);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 	}
+	glDisableVertexAttribArray(3);
 	glBindVertexArray(0);
 
 
